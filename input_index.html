@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>Input Data — Sistem Informasi Perawatan Taman Kota</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+
+  <!-- keep saved theme (default: light) -->
+  <script>(function(){var t=localStorage.getItem('tk_theme')||'light';document.documentElement.setAttribute('data-theme',t);} )();</script>
+
+  <!-- guard: must be logged in (any user) -->
+  <script>
+    (function () {
+      function toSameFolder(file){
+        var dir = location.pathname.endsWith('/') ? location.pathname
+                 : location.pathname.replace(/[^\/]+$/, '');
+        location.replace(dir + file);
+      }
+      try{
+        var auth = JSON.parse(localStorage.getItem('tk_auth')||'null');
+        if (!auth || !auth.user) toSameFolder('index.html');
+      }catch(e){ toSameFolder('index.html'); }
+    })();
+  </script>
+
+  <style>
+    :root{
+      --bg:#f4faf5;--panel:#ffffff;--border:#e6efe8;--text:#0f1e14;--muted:#5c6f61;
+      --accent:#16a34a;--accent-700:#15803d;--accent-50:#eaf7ee;--ring:rgba(22,163,74,.35);
+      --shadow:0 8px 24px rgba(2,6,23,.06);--radius:14px;--radius-lg:20px;
+
+      /* Collapsible sidebar sizes */
+      --sb-open: 250px; --sb-closed: 68px;
+
+      /* Toggle icon contrast */
+      --toggle-ico:#0f1e14;
+    }
+    :root[data-theme="dark"]{
+      --bg:#0e1511;--panel:#0f1b14;--border:#17251b;--text:#ecf4ee;--muted:#9bb3a5;
+      --accent:#22c55e;--accent-700:#16a34a;--accent-50:#0e2215;--ring:rgba(34,197,94,.30);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --toggle-ico:#ecf4ee;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:flex;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 90% -10%, #dff6e6 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, #e8f7ee 0%, transparent 55%),
+        var(--bg);
+    }
+
+    /* === Collapsible sticky sidebar (icons like Start) === */
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      width:var(--sb-open); min-width:var(--sb-open);
+      background:var(--panel); border-right:1px solid var(--border); box-shadow:var(--shadow);
+      padding:16px 12px; display:flex; flex-direction:column; gap:10px;
+      transition: width .25s ease, min-width .25s ease, padding .25s ease;
+      z-index:2;
+    }
+    .sidebar.collapsed{ width:var(--sb-closed); min-width:var(--sb-closed); padding:16px 8px; }
+
+    .brand-row{display:flex;align-items:center;gap:8px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;margin:2px 0 4px}
+    .brand .tree{font-size:18px}
+    .brand .label{white-space:nowrap;transition:opacity .2s ease}
+    .sidebar.collapsed .brand .label{opacity:0;display:none}
+
+    /* One icon button to toggle sidebar */
+    .nav-toggle{
+      margin-left:auto;width:32px;height:32px;display:grid;place-items:center;
+      border-radius:10px;border:1px solid var(--border);background:var(--panel);
+      cursor:pointer; transition:background .2s ease, transform .2s ease; color:var(--toggle-ico);
+    }
+    .nav-toggle:hover{background:var(--accent-50)}
+    .nav-toggle .burger{font-size:18px;line-height:1}
+    .sidebar.collapsed .nav-toggle .burger{transform:rotate(180deg)}
+
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px; border-radius:10px; text-decoration:none;
+      color:var(--text); background:#fff; border:1px solid var(--border);
+      transition:background .15s, border-color .15s, color .15s, padding .2s;
+    }
+    :root[data-theme="dark"] .nav a{ background:var(--panel); }
+    .nav a .ico{width:1.25em; text-align:center}
+    .nav a:hover{ background:var(--accent-50); border-color:var(--accent) }
+    .nav a.active{ background:var(--accent); color:#fff; border-color:var(--accent) }
+    .nav .label{white-space:nowrap;transition:opacity .18s ease, margin .18s ease}
+    .sidebar.collapsed .nav .label{opacity:0;display:none;margin:0}
+    .sidebar.collapsed .nav a{justify-content:center}
+    .sep{height:1px;background:var(--border);margin:6px 0 6px}
+
+    /* Main + hero */
+    .main{flex:1;max-width:1100px;margin:0 auto;padding:24px; transition:padding .25s ease}
+    .sidebar.collapsed + .main{padding-left:24px}
+    .hero{
+      display:flex;gap:18px;align-items:center;padding:28px 24px;border-radius:var(--radius-lg);
+      background:linear-gradient(135deg,var(--accent-50),#ffffff10),var(--panel);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+    }
+    .logo{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:30px;
+      background:conic-gradient(from 180deg,#22c55e 0deg,#16a34a 140deg,#0ea5e9 320deg)}
+    .subtle{color:var(--muted);font-size:13px}
+    .status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:13px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#bbb;box-shadow:0 0 0 3px var(--ring)}
+    .ok .dot{background:var(--accent)} .err .dot{background:#ef4444}
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    .hidden{display:none !important}
+
+    /* Forms */
+    form .row{display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr))}
+    @media (max-width:720px){ form .row{grid-template-columns:1fr}}
+    label{display:block; font-size:13px; color:var(--muted); margin:2px 0 6px}
+    input, select, textarea{
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+      background:#fff; color:#000; outline:none; transition: box-shadow .15s, border-color .15s, background .15s, color .15s;
+    }
+    :root[data-theme="dark"] input, :root[data-theme="dark"] select, :root[data-theme="dark"] textarea{
+      background:var(--panel); color:var(--text);
+    }
+    input:focus, select:focus, textarea:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
+    button{
+      appearance:none; border:none; cursor:pointer;
+      padding:10px 14px; border-radius:10px;
+      background:var(--accent); color:white; font-weight:600;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 6px 14px rgba(22,163,74,.22);
+    }
+    button:hover{background:var(--accent-700)}
+    button:active{transform: translateY(1px)}
+
+    /* theme toggle */
+    .tk-theme-toggle{
+      position: fixed; right: 16px; bottom: 16px; z-index: 1000;
+      padding: 10px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--text); cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand"><span class="tree">🌳</span><span class="label">TamanKota</span></div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" title="Buka/Tutup menu" aria-expanded="true"><span class="burger">☰</span></button>
+    </div>
+    <nav class="nav">
+      <!-- Section (hash) links: only these will be intercepted -->
+      <a href="#taman"    data-view="viewTamanForm"   class="active" title="Input Taman"><span class="ico">🏞️</span><span class="label">Input Taman</span></a>
+      <a href="#tanaman"  data-view="viewTanamanForm" title="Input Tanaman"><span class="ico">🌱</span><span class="label">Input Tanaman</span></a>
+      <a href="#petugas"  data-view="viewPetugasForm" title="Input Petugas"><span class="ico">🧑‍🌾</span><span class="label">Input Petugas</span></a>
+      <a href="#kegiatan" data-view="viewKegiatanForm" title="Input Kegiatan"><span class="ico">🛠️</span><span class="label">Input Kegiatan</span></a>
+      <a href="#laporan"  data-view="viewLaporanForm" title="Input Laporan"><span class="ico">🗒️</span><span class="label">Input Laporan</span></a>
+      <div class="sep"></div>
+      <!-- Page links: these navigate normally -->
+      <a href="output_index.html" title="Buka Output"><span class="ico">📊</span><span class="label">Buka Output</span></a>
+      <a href="report_index.html" title="Cetak Laporan"><span class="ico">🖨️</span><span class="label">Cetak Laporan</span></a>
+      <a href="start_index.html"  title="Kembali ke Start"><span class="ico">⬅️</span><span class="label">Kembali ke Start</span></a>
+      <a href="http://127.0.0.1:8081/phpmyadmin" target="_blank" title="phpMyAdmin"><span class="ico">🗄️</span><span class="label">phpMyAdmin</span></a>
+      <a href="#" id="logout"    title="Keluar"><span class="ico">🚪</span><span class="label">Keluar</span></a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <main class="main">
+    <header class="hero">
+      <div class="logo">📝</div>
+      <div>
+        <h1>Input Data — Sistem Informasi Perawatan Taman Kota</h1>
+        <p class="subtle">Pilih jenis data di menu kiri. Hanya satu formulir yang tampil pada satu waktu.</p>
+      </div>
+      <div id="status" class="status"><span class="dot"></span><span>Cek backend…</span></div>
+    </header>
+
+    <!-- TAMAN -->
+    <section id="viewTamanForm" class="card" style="margin-top:18px">
+      <h3>🏞️ Tambah Taman</h3>
+      <form id="formTaman" autocomplete="off">
+        <div class="row">
+          <div>
+            <label>Nama Taman</label>
+            <input name="nama_taman" required placeholder="Taman Pelangi"/>
+          </div>
+          <div>
+            <label>Luas (m²)</label>
+            <input name="luas_taman" type="number" min="0" placeholder="1500"/>
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Lokasi</label>
+            <input name="lokasi" placeholder="Jl. Cemara No. 12"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button type="submit">Simpan Taman</button>
+          <span id="tamanMsg" class="subtle"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- TANAMAN -->
+    <section id="viewTanamanForm" class="card hidden" style="margin-top:18px">
+      <h3>🌱 Tambah Tanaman</h3>
+      <form id="formTanaman" autocomplete="off">
+        <div class="row">
+          <div>
+            <label>Taman</label>
+            <select name="id_taman" id="tanamanTaman" required></select>
+          </div>
+          <div>
+            <label>Nama Umum</label>
+            <input name="nama_umum" required placeholder="Bougenville"/>
+          </div>
+          <div>
+            <label>Nama Ilmiah</label>
+            <input name="nama_ilmiah" placeholder="Bougainvillea spectabilis"/>
+          </div>
+          <div>
+            <label>Jenis</label>
+            <input name="jenis" placeholder="Semak"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button type="submit">Simpan Tanaman</button>
+          <span id="tanamanMsg" class="subtle"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- PETUGAS -->
+    <section id="viewPetugasForm" class="card hidden" style="margin-top:18px">
+      <h3>🧑‍🌾 Tambah Petugas</h3>
+      <form id="formPetugas" autocomplete="off">
+        <div class="row" style="grid-template-columns:1fr">
+          <div>
+            <label>Nama Petugas</label>
+            <input name="nama_petugas" required placeholder="Budi Santoso"/>
+          </div>
+          <div>
+            <label>Jabatan</label>
+            <input name="jabatan" placeholder="Koordinator"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button type="submit">Simpan Petugas</button>
+          <span id="petugasMsg" class="subtle"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- KEGIATAN -->
+    <section id="viewKegiatanForm" class="card hidden" style="margin-top:18px">
+      <h3>🛠️ Tambah Kegiatan</h3>
+      <form id="formKegiatan" autocomplete="off">
+        <div class="row" style="grid-template-columns:1fr">
+          <div>
+            <label>Jenis Kegiatan</label>
+            <input name="jenis_kegiatan" required placeholder="Penyiraman / Pemangkasan"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button type="submit">Simpan Kegiatan</button>
+          <span id="kegiatanMsg" class="subtle"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- LAPORAN -->
+    <section id="viewLaporanForm" class="card hidden" style="margin-top:18px">
+      <h3>🗒️ Tambah Laporan</h3>
+      <form id="formLaporan" autocomplete="off">
+        <div class="row">
+          <div>
+            <label>Taman</label>
+            <select id="lapTaman"></select>
+          </div>
+          <div>
+            <label>Tanaman</label>
+            <select id="lapTanaman"></select>
+          </div>
+          <div>
+            <label>Kegiatan</label>
+            <select id="lapKegiatan"></select>
+          </div>
+          <div>
+            <label>Petugas</label>
+            <select id="lapPetugas"></select>
+          </div>
+          <div>
+            <label>Tanggal (opsional)</label>
+            <input id="lapTanggal" type="datetime-local"/>
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Isi Laporan</label>
+            <textarea id="lapIsi" placeholder="Catatan kegiatan…" rows="3"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button type="submit">Simpan Laporan</button>
+          <span id="lapMsg" class="subtle"></span>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- theme toggle -->
+  <button class="tk-theme-toggle" id="btnTheme" aria-label="Ubah ke mode gelap">🌙 Gelap</button>
+
+  <script>
+    /* ===== Sidebar open/close with persistence (same key as Start/Output) ===== */
+    (function(){
+      const KEY='tk_nav_collapsed';
+      const sb  = document.getElementById('sidebar');
+      const btn = document.getElementById('navToggle');
+      function apply(collapsed){
+        if(collapsed){ sb.classList.add('collapsed'); btn.setAttribute('aria-expanded','false'); }
+        else{ sb.classList.remove('collapsed'); btn.setAttribute('aria-expanded','true'); }
+        try{ localStorage.setItem(KEY, collapsed?'1':'0'); }catch(_){}
+      }
+      apply(localStorage.getItem(KEY)==='1');
+      btn.addEventListener('click',()=>apply(!sb.classList.contains('collapsed')));
+    })();
+
+    // Theme toggle
+    (function(){
+      const KEY='tk_theme', btn=document.getElementById('btnTheme');
+      function apply(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem(KEY,t);}catch(_){}
+        btn.textContent=(t==='dark')?'🌞 Terang':'🌙 Gelap';
+        btn.setAttribute('aria-label',(t==='dark')?'Ubah ke mode terang':'Ubah ke mode gelap');}
+      apply(localStorage.getItem(KEY)||'light');
+      btn.addEventListener('click',()=>apply((localStorage.getItem(KEY)||'light')==='dark'?'light':'dark'));
+    })();
+
+    // Utilities
+    const API='http://127.0.0.1:5000/api';
+    const qs=(s)=>document.querySelector(s), qsa=(s)=>Array.from(document.querySelectorAll(s));
+    async function api(path,options={}){const hasBody=!!options.body; const headers=hasBody?{'Content-Type':'application/json'}:{};
+      const res=await fetch(API+path,{cache:'no-store',...options,headers:{...headers,...(options.headers||{})}});
+      if(!res.ok){const txt=await res.text().catch(()=>res.statusText); throw new Error(txt||res.statusText);}
+      return (res.headers.get('content-type')||'').includes('application/json')?res.json():{};}
+
+    // Health indicator
+    (async ()=>{const box=qs('#status');
+      try{await api('/health'); box.classList.add('ok'); box.lastElementChild.textContent='Backend tersambung';}
+      catch{box.classList.add('err'); box.lastElementChild.textContent='Backend tidak dapat dijangkau';}
+    })();
+
+    // Router (only intercept hash links)
+    const VIEW_IDS=['viewTamanForm','viewTanamanForm','viewPetugasForm','viewKegiatanForm','viewLaporanForm'];
+    function hideAll(){VIEW_IDS.forEach(id=>qs('#'+id).classList.add('hidden'))}
+    function setActive(h){qsa('.nav a[data-view]').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+h))}
+    async function showByHash(){
+      const h=(location.hash||'#taman').slice(1);
+      const link=qs('.nav a[data-view][href="#'+h+'"]'); const view=link?link.dataset.view:'viewTamanForm';
+      hideAll(); qs('#'+view).classList.remove('hidden'); setActive(h);
+      if(view==='viewTanamanForm') await populateTamanForTanaman();
+      if(view==='viewLaporanForm') { await populateRefData(); await refreshLaporanTanamanOptions(parseInt(qs('#lapTaman').value||'0',10)); }
+    }
+    qsa('.nav a').forEach(a=>{
+      a.addEventListener('click',e=>{
+        const href=a.getAttribute('href')||'';
+        if(href.startsWith('#')){ e.preventDefault(); location.hash=href; } // only hash intercepted
+      });
+    });
+
+    // Populate select boxes
+    async function populateTamanForTanaman(){
+      const list=await api('/taman'); const sel=qs('#tanamanTaman'); sel.innerHTML='';
+      list.forEach(t=>{const o=document.createElement('option');o.value=t.id_taman;o.textContent=t.nama_taman;sel.appendChild(o);});
+    }
+    async function populateRefData(){
+      const [keg, pet, taman]=await Promise.all([api('/kegiatan'), api('/petugas'), api('/taman')]);
+      const kegSel=qs('#lapKegiatan'), petSel=qs('#lapPetugas'), tamSel=qs('#lapTaman'), tanSel=qs('#lapTanaman');
+      kegSel.innerHTML=''; petSel.innerHTML=''; tamSel.innerHTML=''; tanSel.innerHTML='';
+      keg.forEach(r=>{const o=document.createElement('option');o.value=r.id_kegiatan;o.textContent=r.jenis_kegiatan;kegSel.appendChild(o);});
+      pet.forEach(r=>{const o=document.createElement('option');o.value=r.id_petugas; o.textContent=r.nama_petugas; petSel.appendChild(o);});
+      taman.forEach(r=>{const o=document.createElement('option');o.value=r.id_taman;  o.textContent=r.nama_taman; tamSel.appendChild(o);});
+      if(taman.length){tamSel.value=taman[0].id_taman;}
+    }
+    async function refreshLaporanTanamanOptions(id_taman){
+      if(!id_taman){const s=qs('#lapTanaman'); s.innerHTML=''; return;}
+      const data=await api('/tanaman?id_taman='+parseInt(id_taman,10));
+      const s=qs('#lapTanaman'); s.innerHTML='';
+      data.forEach(r=>{const o=document.createElement('option');o.value=r.id_tanaman;o.textContent=r.nama_umum;s.appendChild(o);});
+    }
+    qs('#lapTaman')?.addEventListener('change',e=>refreshLaporanTanamanOptions(parseInt(e.target.value||'0',10)));
+
+    // Forms submit
+    qs('#formTaman').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const f=new FormData(e.target); const body=Object.fromEntries(f.entries());
+      try{ await api('/taman',{method:'POST',body:JSON.stringify(body)});
+        qs('#tamanMsg').textContent='Tersimpan.'; e.target.reset();
+      }catch(err){ qs('#tamanMsg').textContent='Gagal: '+err.message; }
+    });
+
+    qs('#formTanaman').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const f=new FormData(e.target); const body=Object.fromEntries(f.entries());
+      body.id_taman=parseInt(body.id_taman,10);
+      try{ await api('/tanaman',{method:'POST',body:JSON.stringify(body)});
+        qs('#tanamanMsg').textContent='Tanaman tersimpan.'; e.target.reset(); await populateTamanForTanaman();
+      }catch(err){ qs('#tanamanMsg').textContent='Gagal: '+err.message; }
+    });
+
+    qs('#formPetugas').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const f=new FormData(e.target); const body=Object.fromEntries(f.entries());
+      try{ await api('/petugas',{method:'POST',body:JSON.stringify(body)});
+        qs('#petugasMsg').textContent='Petugas tersimpan.'; e.target.reset();
+      }catch(err){ qs('#petugasMsg').textContent='Gagal: '+err.message; }
+    });
+
+    qs('#formKegiatan').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const f=new FormData(e.target); const body=Object.fromEntries(f.entries());
+      try{ await api('/kegiatan',{method:'POST',body:JSON.stringify(body)});
+        qs('#kegiatanMsg').textContent='Kegiatan tersimpan.'; e.target.reset();
+      }catch(err){ qs('#kegiatanMsg').textContent='Gagal: '+err.message; }
+    });
+
+    qs('#formLaporan').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const body={
+        id_tanaman: parseInt(qs('#lapTanaman').value||'0',10),
+        id_petugas: parseInt(qs('#lapPetugas').value||'0',10),
+        id_kegiatan: parseInt(qs('#lapKegiatan').value||'0',10),
+        tanggal: qs('#lapTanggal').value ? new Date(qs('#lapTanggal').value).toISOString().slice(0,19).replace('T',' ') : undefined,
+        isi_laporan: qs('#lapIsi').value||''
+      };
+      try{
+        await api('/laporan',{method:'POST',body:JSON.stringify(body)});
+        qs('#lapMsg').textContent='Laporan tersimpan.'; qs('#lapIsi').value='';
+      }catch(err){ qs('#lapMsg').textContent='Gagal: '+err.message; }
+    });
+
+    // Init
+    window.addEventListener('hashchange',showByHash);
+    showByHash();
+
+    // Logout
+    qs('#logout')?.addEventListener('click',function(e){
+      e.preventDefault(); try{localStorage.removeItem('tk_auth');localStorage.removeItem('tk_auth_base');}catch(_){}
+      var dir=location.pathname.endsWith('/')?location.pathname:location.pathname.replace(/[^\/]+$/,''); location.href=dir+'index.html';
+    });
+  </script>
+</body>
+</html>

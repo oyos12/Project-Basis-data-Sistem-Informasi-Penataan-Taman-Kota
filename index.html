@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>Sistem Informasi Penataan Taman Kota</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+
+  <!-- Apply saved theme asap -->
+  <script>(function(){var t=localStorage.getItem('tk_theme')||'light';document.documentElement.setAttribute('data-theme',t);} )();</script>
+
+  <style>
+    :root{
+      --bg:#f4faf5; --panel:#ffffff; --border:#e6efe8; --text:#0f1e14; --muted:#5c6f61;
+      --accent:#16a34a; --accent-700:#15803d; --accent-50:#eaf7ee; --ring:rgba(22,163,74,.35);
+      --shadow:0 10px 28px rgba(2,6,23,.08); --radius:16px; --radius-lg:22px;
+    }
+    /* Dark overrides (activated when <html data-theme="dark">) */
+    :root[data-theme="dark"]{
+      --bg:#0e1511; --panel:#0f1b14; --border:#17251b; --text:#ecf4ee; --muted:#9bb3a5;
+      --accent:#22c55e; --accent-700:#16a34a; --accent-50:#0e2215; --ring:rgba(34,197,94,.30);
+      --shadow:0 12px 32px rgba(0,0,0,.38);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center; padding:28px 16px;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 90% -10%, #dff6e6 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, #e8f7ee 0%, transparent 55%),
+        var(--bg);
+    }
+    .shell{width:100%; max-width:1100px}
+
+    /* Hero */
+    .hero{
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      padding:28px 24px; border:1px solid var(--border); border-radius:var(--radius-lg);
+      background:linear-gradient(135deg,var(--accent-50),#ffffff10),var(--panel);
+      box-shadow:var(--shadow);
+    }
+    .logo{
+      width:64px;height:64px;border-radius:18px;display:grid;place-items:center;color:#fff;font-size:34px;
+      background:conic-gradient(from 180deg,#22c55e 0deg,#16a34a 140deg,#0ea5e9 320deg);
+    }
+    .hero h1{margin:0; font-size:28px}
+    .subtle{color:var(--muted); font-size:14px}
+    .spacer{flex:1}
+    .toolbar{display:flex; gap:10px}
+    .btn{
+      appearance:none; border:none; cursor:pointer; text-decoration:none;
+      padding:12px 16px; border-radius:12px; font-weight:700;
+      background:var(--accent); color:#fff; box-shadow:0 8px 18px rgba(22,163,74,.22);
+    }
+    .btn:hover{background:var(--accent-700)}
+    .ghost{color:#0f5132; background:var(--accent-50); border:1px solid var(--border); box-shadow:none}
+    .ghost:hover{background:#dff3e6}
+
+    /* Cards */
+    .grid{display:grid; gap:18px; grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:18px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:18px;
+    }
+    .card h3{margin:0 0 8px; font-size:18px}
+    .card p{margin:0; line-height:1.55}
+
+    .cta{display:flex; gap:12px; align-items:center; justify-content:flex-end; margin-top:18px}
+
+    /* Modal */
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35);
+      display:none; align-items:center; justify-content:center; z-index:50}
+    .modal{width:100%; max-width:460px; background:var(--panel); color:var(--text);
+      border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding:18px}
+    .tabs{display:flex; gap:8px; margin-bottom:12px}
+    .tab{flex:1; text-align:center; padding:10px 12px; border-radius:10px; cursor:pointer;
+      border:1px solid var(--border); background:color-mix(in srgb, var(--panel) 85%, var(--accent-50));
+      font-weight:700; color:var(--text)}
+    .tab.active{border-color:var(--accent); background:var(--accent-50)}
+    .row{display:grid; gap:10px}
+    label{display:block; font-size:13px; color:var(--muted)}
+    input{
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+      background:var(--panel); color:var(--text); outline:none;
+    }
+    input::placeholder{color:var(--muted)}
+    input:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
+    .actions{display:flex; gap:10px; justify-content:flex-end; margin-top:10px}
+    .muted{font-size:12px; color:var(--muted)}
+    .err{color:#b00020; font-size:13px; min-height:1.2em}
+    .hidden{display:none !important}
+
+    /* Floating Theme Toggle */
+    .tk-theme-toggle{
+      position: fixed; right: 16px; bottom: 16px; z-index: 1000;
+      padding: 10px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--text); cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="logo" aria-hidden="true">🌿</div>
+      <div style="min-width:280px">
+        <h1>Sistem Informasi Penataan Taman Kota</h1>
+        <p class="subtle">Selamat datang! Portal pengelolaan data taman kota—dibuat agar pengelolaan ruang hijau lebih rapi, cepat, dan akurat.</p>
+      </div>
+      <div class="spacer"></div>
+      <div class="toolbar">
+        <button class="btn ghost" id="btnContinue" title="Lanjutkan ke menu utama">Lanjutkan</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h3>Fungsi Sistem</h3>
+        <p>Mengelola data <strong>taman</strong>, <strong>tanaman</strong>, <strong>petugas</strong>,
+          <strong>kegiatan</strong>, dan <strong>laporan perawatan</strong> dengan input sederhana dan output tabel rapi.</p>
+      </article>
+
+      <article class="card">
+        <h3>Manfaat</h3>
+        <p>Mempercepat pencatatan, meminimalkan kesalahan, melacak riwayat perawatan, dan membantu pengambilan keputusan teknis.</p>
+      </article>
+
+      <article class="card">
+        <h3>Alasan Dibuat</h3>
+        <p>Menyatukan data yang sebelumnya tercecer di formulir manual/spreadsheet agar <em>terstandardisasi</em>, mudah diaudit, dan siap integrasi dashboard.</p>
+      </article>
+    </section>
+
+    <div class="cta">
+      <button class="btn" id="btnContinue2">Lanjutkan ke Menu Utama</button>
+    </div>
+  </div>
+
+  <!-- ===== Login / Register Modal ===== -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <h3 id="authTitle" style="margin:0 0 10px">Masuk / Daftar</h3>
+
+      <div class="tabs">
+        <button type="button" class="tab active"  id="tabLogin">Masuk</button>
+        <button type="button" class="tab"        id="tabRegister">Daftar Akun</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="row" autocomplete="off">
+        <div>
+          <label>Username</label>
+          <input id="loginUser" placeholder="Username" required>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="loginPass" type="password" placeholder="Password" required>
+        </div>
+        <div class="err" id="loginErr"></div>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="btnCancel">Batal</button>
+          <button type="submit" class="btn">Masuk</button>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" class="row hidden" autocomplete="off">
+        <div>
+          <label>Nama Lengkap (opsional)</label>
+          <input id="regName" placeholder="Nama Lengkap">
+        </div>
+        <div>
+          <label>Username</label>
+          <input id="regUser" placeholder="Username" required minlength="3" maxlength="32">
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="regPass" type="password" placeholder="Minimal 6 karakter" required minlength="6" maxlength="72">
+        </div>
+        <div>
+          <label>Ulangi Password</label>
+          <input id="regPass2" type="password" placeholder="Ulangi password" required minlength="6" maxlength="72">
+        </div>
+        <div class="err" id="registerErr"></div>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="btnCancel2">Batal</button>
+          <button type="submit" class="btn">Daftar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Bright/Dark toggle (shared via localStorage) -->
+  <button class="tk-theme-toggle" id="btnTheme" aria-label="Ubah ke mode gelap">🌙 Gelap</button>
+
+  <script>
+    /* ===== Same-folder navigator to avoid path bugs ===== */
+    const START_PAGE = 'start_index.html';
+    function toSameFolder(file){
+      var dir = location.pathname.endsWith('/') ? location.pathname
+              : location.pathname.replace(/[^\/]+$/, '');
+      location.replace(dir + file);
+    }
+
+    /* ===== Auth API detection (5001 SQLite auth or 5000 main API) ===== */
+    const AUTH_BASE_KEY='tk_auth_base';
+    const AUTH_BASES=['http://127.0.0.1:5001/api','http://127.0.0.1:5000/api'];
+    async function detectAuthBase(){
+      const cached=localStorage.getItem(AUTH_BASE_KEY);
+      if(cached){
+        try{ const ok=await fetch(cached+'/auth/health',{cache:'no-store'}); if(ok.ok) return cached; }catch(_){}
+        localStorage.removeItem(AUTH_BASE_KEY);
+      }
+      for(const base of AUTH_BASES){
+        try{ const r=await fetch(base+'/auth/health',{cache:'no-store'}); if(r.ok){ localStorage.setItem(AUTH_BASE_KEY,base); return base; } }catch(_){}
+      }
+      return null;
+    }
+    async function postJSON(path, payload){
+      const base = await detectAuthBase();
+      if(!base) throw new Error('Layanan autentikasi tidak dapat dijangkau (cek server :5001 / :5000 & CORS).');
+      const res = await fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const text=await res.text(); let data={}; try{ data=text?JSON.parse(text):{} }catch(_){}
+      if(!res.ok) throw new Error((data.error||data.message||text||res.statusText||'Gagal'));
+      return data;
+    }
+
+    /* ===== Storage helpers ===== */
+    function getAuth(){ try{ return JSON.parse(localStorage.getItem('tk_auth')||'null'); }catch(_){ return null; } }
+    function setAuth(userObj){ localStorage.setItem('tk_auth', JSON.stringify({ ...userObj, ts: Date.now() })); }
+
+    /* ===== Modal helpers ===== */
+    const authModal=document.getElementById('authModal');
+    const loginForm=document.getElementById('loginForm');
+    const registerForm=document.getElementById('registerForm');
+    const loginErr=document.getElementById('loginErr');
+    const registerErr=document.getElementById('registerErr');
+    const tabLogin=document.getElementById('tabLogin');
+    const tabRegister=document.getElementById('tabRegister');
+    const loginUser=document.getElementById('loginUser');
+    const regUser=document.getElementById('regUser');
+
+    function openModal(mode){ authModal.style.display='flex'; switchTab(mode||'login'); }
+    function closeModal(){ authModal.style.display='none'; }
+    function switchTab(which){
+      const isLogin = which==='login';
+      tabLogin.classList.toggle('active', isLogin);
+      tabRegister.classList.toggle('active', !isLogin);
+      loginForm.classList.toggle('hidden', !isLogin);
+      registerForm.classList.toggle('hidden', isLogin);
+      (isLogin?loginUser:regUser).focus();
+      loginErr.textContent=''; registerErr.textContent='';
+    }
+    tabLogin.addEventListener('click', ()=>switchTab('login'));
+    tabRegister.addEventListener('click', ()=>switchTab('register'));
+    document.getElementById('btnCancel').addEventListener('click', closeModal);
+    document.getElementById('btnCancel2').addEventListener('click', closeModal);
+
+    /* ===== Continue buttons ===== */
+    function goStart(){
+      const a=getAuth();
+      if(a&&a.user) toSameFolder(START_PAGE);
+      else openModal('login');
+    }
+    document.getElementById('btnContinue').addEventListener('click', goStart);
+    document.getElementById('btnContinue2').addEventListener('click', goStart);
+
+    /* ===== Login flow ===== */
+    loginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault(); loginErr.textContent='';
+      const u=document.getElementById('loginUser').value.trim();
+      const p=document.getElementById('loginPass').value;
+      try{
+        const out=await postJSON('/auth/login',{username:u,password:p});
+        const user=out.user || {username:u,name:out.name||u};
+        setAuth({ user, token: out.token });
+        closeModal();
+        toSameFolder(START_PAGE);
+      }catch(err){
+        loginErr.textContent = err.message || 'Login gagal.';
+      }
+    });
+
+    /* ===== Register flow ===== */
+    registerForm.addEventListener('submit', async (e)=>{
+      e.preventDefault(); registerErr.textContent='';
+      const name=document.getElementById('regName').value.trim();
+      const user=document.getElementById('regUser').value.trim();
+      const pass=document.getElementById('regPass').value;
+      const pass2=document.getElementById('regPass2').value;
+      if(pass.length<6){ registerErr.textContent='Password minimal 6 karakter.'; return; }
+      if(pass!==pass2){ registerErr.textContent='Ulangi password tidak cocok.'; return; }
+      try{
+        await postJSON('/auth/register',{username:user,password:pass,name});
+        try{
+          const out=await postJSON('/auth/login',{username:user,password:pass});
+          setAuth({ user: out.user || {username:user,name:name||user}, token: out.token });
+        }catch{
+          setAuth({ user:{username:user,name:name||user} });
+        }
+        closeModal();
+        toSameFolder(START_PAGE);
+      }catch(err){
+        registerErr.textContent = (err && err.message)
+          ? err.message + ' — pastikan server auth aktif & CORS mengizinkan origin 8081.'
+          : 'Pendaftaran gagal.';
+      }
+    });
+
+    /* ===== Theme toggle button ===== */
+    (function(){
+      const KEY='tk_theme', btn=document.getElementById('btnTheme');
+      function apply(t){
+        document.documentElement.setAttribute('data-theme', t);
+        try{localStorage.setItem(KEY,t);}catch(_){}
+        btn.textContent = (t==='dark') ? '🌞 Terang' : '🌙 Gelap';
+        btn.setAttribute('aria-label',(t==='dark')?'Ubah ke mode terang':'Ubah ke mode gelap');
+      }
+      apply(localStorage.getItem(KEY)||'light');
+      btn.addEventListener('click',()=>apply((localStorage.getItem(KEY)||'light')==='dark'?'light':'dark'));
+    })();
+  </script>
+</body>
+</html>

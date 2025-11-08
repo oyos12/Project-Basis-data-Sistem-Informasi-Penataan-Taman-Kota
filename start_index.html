@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>TamanKota — Start</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+
+  <!-- Apply saved theme early (default: light) -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('tk_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <!-- === Auth guard: allow ANY logged-in user (same-folder safe) === -->
+  <script>
+  (function () {
+    function go(file){
+      var dir = location.pathname.endsWith('/') ? location.pathname
+               : location.pathname.replace(/[^\/]+$/, '');
+      location.replace(dir + file);
+    }
+    try{
+      var raw = localStorage.getItem('tk_auth');
+      var auth = raw ? JSON.parse(raw) : null;
+      if (!auth || !auth.user) go('index.html'); // accept any account that has a user object
+    }catch(e){
+      go('index.html');
+    }
+  })();
+  </script>
+
+  <style>
+    :root{
+      --bg:#f4faf5;--panel:#ffffff;--border:#e6efe8;--text:#0f1e14;--muted:#46564a;
+      --accent:#16a34a;--accent-700:#15803d;--accent-50:#eaf7ee;--ring:rgba(22,163,74,.35);
+      --shadow:0 8px 24px rgba(2,6,23,.06);--radius:14px;--radius-lg:20px;
+      --link:#0b5e34;--link-hover:#0a4b2a;--text-on-accent:#fff;
+
+      /* Sidebar sizes */
+      --sb-open: 250px;
+      --sb-closed: 68px;
+
+      /* Icon color for the toggle button (black in light mode) */
+      --toggle-ico: #0f1e14;
+    }
+    :root[data-theme="dark"]{
+      --bg:#0e1511;--panel:#0f1b14;--border:#17251b;--text:#ecf4ee;--muted:#9bb3a5;
+      --accent:#22c55e;--accent-700:#16a34a;--accent-50:#0e2215;--ring:rgba(34,197,94,.30);
+      --shadow:0 10px 30px rgba(0,0,0,.35);--link:#7ce2a5;--link-hover:#b5f0cb;--text-on-accent:#0b2c17;
+
+      /* Icon color for the toggle button (light in dark mode) */
+      --toggle-ico: #ecf4ee;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;min-height:100vh;display:flex;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 90% -10%, #dff6e6 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, #e8f7ee 0%, transparent 55%),
+        var(--bg);
+    }
+    a{color:var(--link)} a:hover{color:var(--link-hover)}
+    :focus-visible{outline:3px solid var(--ring);outline-offset:2px;border-radius:8px}
+
+    /* === Collapsible sticky sidebar === */
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      width:var(--sb-open); min-width:var(--sb-open);
+      background:var(--panel); border-right:1px solid var(--border);
+      box-shadow:var(--shadow); padding:16px 12px;
+      display:flex; flex-direction:column; gap:10px;
+      transition: width .25s ease, min-width .25s ease, padding .25s ease;
+      z-index:2;
+    }
+    .sidebar.collapsed{
+      width:var(--sb-closed); min-width:var(--sb-closed); padding:16px 8px;
+    }
+
+    .side-row{display:flex; align-items:center; gap:8px}
+    .brand{font-weight:800;font-size:18px;color:var(--text)}
+    .brand .tree{font-size:18px}
+    .brand .label{white-space:nowrap;transition:opacity .2s ease}
+    .sidebar.collapsed .brand .label{opacity:0;display:none}
+
+    /* Toggle button (single icon) */
+    .nav-toggle{
+      margin-left:auto;
+      width:32px;height:32px;display:grid;place-items:center;
+      border-radius:10px;border:1px solid var(--border);background:var(--panel);
+      cursor:pointer; transition:transform .2s ease, background .2s ease;
+      color:var(--toggle-ico);
+    }
+    .nav-toggle:hover{background:var(--accent-50)}
+    .nav-toggle .burger{font-size:18px; line-height:1}
+    .sidebar.collapsed .nav-toggle .burger{transform:rotate(180deg)}
+
+    /* Nav items */
+    .nav{display:flex;flex-direction:column;gap:8px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:10px;text-decoration:none;
+      color:var(--text); background:#fff; border:1px solid var(--border);
+      transition:background .15s, border-color .15s, color .15s, padding .2s;
+    }
+    :root[data-theme="dark"] .nav a{background:var(--panel)}
+    .nav a:hover{background:var(--accent-50);border-color:var(--accent)}
+    .nav .ico{width:1.25em;text-align:center}
+    .nav .label{white-space:nowrap;transition:opacity .18s ease, margin .18s ease}
+    .sidebar.collapsed .nav .label{opacity:0; margin:0; display:none}
+    .sidebar.collapsed .nav a{justify-content:center}
+
+    .sep{height:1px;background:var(--border);margin:6px 0 2px}
+
+    /* Main content auto-resizes because of flex layout */
+    .main-content{flex:1; padding:20px; transition:padding .25s ease}
+    .sidebar.collapsed + .main-content{padding-left:24px}
+
+    .hero{
+      padding:28px 24px;border-radius:var(--radius-lg);
+      background:linear-gradient(135deg,var(--accent-50),#ffffff10),var(--panel);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+      display:flex; gap:18px; align-items:center; color:var(--text)
+    }
+    .logo{
+      width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:30px;
+      background:conic-gradient(from 180deg,#22c55e 0deg,#16a34a 140deg,#0ea5e9 320deg)}
+    .subtle{color:var(--muted);font-size:13px}
+    .top-actions{display:flex;gap:10px;margin-top:10px}
+    .chip{font-size:13px;text-decoration:none;color:var(--text);background:var(--accent-50);
+          padding:6px 10px;border:1px solid var(--border);border-radius:999px}
+    .chip:hover{border-color:var(--accent)}
+
+    .status-dot{
+      margin-left:auto;display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background:var(--panel);color:var(--muted);font-size:13px
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:#bbb;box-shadow:0 0 0 3px var(--ring)}
+    .ok .dot{background:var(--accent)} .err .dot{background:#ef4444}
+
+    .tiles{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:20px}
+    .tile{
+      display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid var(--border);
+      border-radius:18px;background:var(--panel);color:var(--text);
+      text-decoration:none; box-shadow:0 4px 18px rgba(0,0,0,.06);
+      transition:transform .08s,box-shadow .2s,border-color .2s,background .2s
+    }
+    .tile:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 24px rgba(22,163,74,.18)}
+    .tile .title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+    .tile .icon{font-size:22px}
+    .tile .desc{color:#334155;font-size:13px}
+    :root[data-theme="dark"] .tile .desc{color:var(--muted)}
+    .btn{
+      align-self:flex-start;padding:10px 14px;border-radius:12px;border:1px solid transparent;cursor:pointer;
+      background:var(--accent);color:var(--text-on-accent);font-weight:700;
+      box-shadow:0 6px 16px rgba(22,163,74,.22);text-decoration:none;display:inline-block;
+      transition:background .15s,color .15s,transform .06s
+    }
+    .btn:hover{background:var(--accent-700)} .btn:active{transform:translateY(1px)}
+
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+         background:#eef7f0;color:#0b3b1d;padding:0 6px;border-radius:6px;border:1px solid var(--border)}
+
+    /* Floating Bright/Dark toggle */
+    .tk-theme-toggle{
+      position:fixed;right:16px;bottom:16px;z-index:1000;
+      padding:10px 12px;border-radius:999px;border:1px solid var(--border);
+      background:var(--panel);color:var(--text);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.12)
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-row">
+      <div class="brand"><span class="tree">🌳</span><span class="label">TamanKota</span></div>
+      <!-- one icon button to toggle open/close -->
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" title="Buka/Tutup menu" aria-expanded="true">
+        <span class="burger">☰</span>
+      </button>
+    </div>
+
+    <nav class="nav">
+      <a href="input_index.html"  title="Buka Input"><span class="ico">📝</span><span class="label">Buka Input</span></a>
+      <a href="output_index.html" title="Buka Output"><span class="ico">📊</span><span class="label">Buka Output</span></a>
+      <!-- NEW: link to Report page -->
+      <a href="report_index.html" title="Cetak Laporan"><span class="ico">🖨️</span><span class="label">Cetak Laporan</span></a>
+
+      <a href="http://127.0.0.1:8081/phpmyadmin" target="_blank" rel="noopener" title="phpMyAdmin">
+        <span class="ico">🗄️</span><span class="label">Buka phpMyAdmin</span>
+      </a>
+      <div class="sep"></div>
+      <a href="#" id="logout" title="Keluar"><span class="ico">🚪</span><span class="label">Keluar</span></a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <main class="main-content">
+    <header class="hero">
+      <div class="logo">🌳</div>
+      <div style="flex:1">
+        <h1 id="welcomeTitle">TamanKota — Start</h1>
+        <p class="subtle">Mulai dari sini: pilih Input untuk menambah data, Output untuk melihat data, atau buka phpMyAdmin.</p>
+        <div class="top-actions">
+          <a class="chip" href="input_index.html">Buka Input</a>
+          <a class="chip" href="output_index.html">Buka Output</a>
+          <!-- Optional quick access to Report -->
+          <a class="chip" href="report_index.html">Cetak Laporan</a>
+        </div>
+      </div>
+      <div class="status-dot" id="statusBox"><span class="dot"></span><span>Status backend</span></div>
+    </header>
+
+    <section class="tiles">
+      <a class="tile" href="input_index.html">
+        <div class="title"><span class="icon">📝</span>Input Data</div>
+        <div class="desc">Form untuk menambah data: Taman, Tanaman, Petugas, Kegiatan, dan Laporan.</div>
+        <span class="btn">Buka Input</span>
+      </a>
+
+      <a class="tile" href="output_index.html">
+        <div class="title"><span class="icon">📊</span>Output Data</div>
+        <div class="desc">Lihat data yang sudah tersimpan dalam tabel-tabel dengan tampilan yang rapi.</div>
+        <span class="btn">Buka Output</span>
+      </a>
+
+      <!-- NEW: tile to Report page -->
+      <a class="tile" href="report_index.html">
+        <div class="title"><span class="icon">🖨️</span>Laporan</div>
+        <div class="desc">Gabungkan & cetak semua data (Taman, Petugas, Kegiatan, Tanaman, Laporan) jadi satu berkas.</div>
+        <span class="btn">Buka Laporan</span>
+      </a>
+
+      <a class="tile" href="http://127.0.0.1:8081/phpmyadmin" target="_blank" rel="noopener">
+        <div class="title"><span class="icon">🗄️</span>phpMyAdmin</div>
+        <div class="desc">Kelola basis data MySQL Anda secara langsung melalui antarmuka phpMyAdmin.</div>
+        <span class="btn">Buka phpMyAdmin</span>
+      </a>
+    </section>
+
+    <section style="margin-top:18px">
+      <p class="subtle">Tip: Jika ingin halaman ini jadi default, set <span class="kbd">DirectoryIndex start_index.html</span> pada <span class="kbd">.htaccess</span> atau VirtualHost Anda.</p>
+    </section>
+  </main>
+
+  <!-- Theme toggle -->
+  <button class="tk-theme-toggle" id="btnTheme" aria-label="Ubah ke mode gelap">🌙 Gelap</button>
+
+  <script>
+    /* ===== Sidebar open/close with persistence ===== */
+    (function(){
+      const KEY='tk_nav_collapsed';
+      const sb  = document.getElementById('sidebar');
+      const btn = document.getElementById('navToggle');
+
+      function apply(collapsed){
+        if(collapsed){
+          sb.classList.add('collapsed');
+          btn.setAttribute('aria-expanded','false');
+        }else{
+          sb.classList.remove('collapsed');
+          btn.setAttribute('aria-expanded','true');
+        }
+        try{ localStorage.setItem(KEY, collapsed?'1':'0'); }catch(_){}
+      }
+      // load state
+      apply(localStorage.getItem(KEY)==='1');
+      // toggle
+      btn.addEventListener('click', ()=>apply(!sb.classList.contains('collapsed')));
+    })();
+
+    /* ===== Theme toggle ===== */
+    (function(){
+      const KEY='tk_theme', btn=document.getElementById('btnTheme');
+      function apply(t){
+        document.documentElement.setAttribute('data-theme',t);
+        try{ localStorage.setItem(KEY,t); }catch(_){}
+        btn.textContent=(t==='dark')?'🌞 Terang':'🌙 Gelap';
+        btn.setAttribute('aria-label',(t==='dark')?'Ubah ke mode terang':'Ubah ke mode gelap');
+      }
+      apply(localStorage.getItem(KEY)||'light');
+      btn.addEventListener('click',()=>apply((localStorage.getItem(KEY)||'light')==='dark'?'light':'dark'));
+    })();
+
+    /* ===== Backend health (Flask API on 5000) ===== */
+    const API = "http://127.0.0.1:5000/api";
+    async function checkHealth(){
+      const box = document.getElementById('statusBox');
+      if (!box) return;
+      try{
+        const res = await fetch(API + '/health', {cache:'no-store'});
+        if(!res.ok) throw 0;
+        box.classList.remove('err'); box.classList.add('ok');
+        box.lastElementChild.textContent = 'Backend tersambung';
+      }catch{
+        box.classList.remove('ok'); box.classList.add('err');
+        box.lastElementChild.textContent = 'Backend tidak dapat dijangkau';
+      }
+    }
+    checkHealth();
+
+    /* ===== Personalize heading from stored auth ===== */
+    (function(){
+      try{
+        const auth = JSON.parse(localStorage.getItem('tk_auth')||'null');
+        if (auth && auth.user){
+          const name = auth.user.name || auth.user.username || auth.user;
+          const h = document.getElementById('welcomeTitle');
+          if (h) h.textContent = 'TamanKota — Start (Hai, ' + name + ')';
+        }
+      }catch(_){}
+    })();
+
+    /* ===== Logout -> back to index.html in same folder ===== */
+    function toSameFolder(file){
+      var dir = location.pathname.endsWith('/') ? location.pathname
+               : location.pathname.replace(/[^\/]+$/, '');
+      return dir + file;
+    }
+    document.getElementById('logout').addEventListener('click', function(e){
+      e.preventDefault();
+      try{
+        localStorage.removeItem('tk_auth');
+        localStorage.removeItem('tk_auth_base');
+      }catch(_){}
+      location.href = toSameFolder('index.html');
+    });
+  </script>
+</body>
+</html>

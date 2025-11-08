@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>Report — Sistem Informasi Perawatan Taman Kota</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+
+  <script>(function(){var t=localStorage.getItem('tk_theme')||'light';document.documentElement.setAttribute('data-theme',t);} )();</script>
+
+  <script>
+    (function () {
+      function toSameFolder(file){
+        var dir = location.pathname.endsWith('/') ? location.pathname
+                 : location.pathname.replace(/[^\/]+$/, '');
+        location.replace(dir + file);
+      }
+      try{
+        var auth = JSON.parse(localStorage.getItem('tk_auth')||'null');
+        if (!auth || !auth.user) toSameFolder('index.html');
+      }catch(e){ toSameFolder('index.html'); }
+    })();
+  </script>
+
+  <style>
+    :root{
+      --bg:#f4faf5;--panel:#ffffff;--border:#e6efe8;--text:#0f1e14;--muted:#5c6f61;
+      --accent:#16a34a;--accent-700:#15803d;--accent-50:#eaf7ee;--ring:rgba(22,163,74,.35);
+      --shadow:0 8px 24px rgba(2,6,23,.06);--radius:14px;--radius-lg:20px;
+      --sb-open: 250px; --sb-closed: 68px; --toggle-ico:#0f1e14;
+    }
+    :root[data-theme="dark"]{
+      --bg:#0e1511;--panel:#0f1b14;--border:#17251b;--text:#ecf4ee;--muted:#9bb3a5;
+      --accent:#22c55e;--accent-700:#16a34a;--accent-50:#0e2215;--ring:rgba(34,197,94,.30);
+      --shadow:0 10px 30px rgba(0,0,0,.35); --toggle-ico:#ecf4ee;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:flex;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 90% -10%, #dff6e6 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, #e8f7ee 0%, transparent 55%),
+        var(--bg);
+    }
+    .sidebar{
+      position:sticky; top:0; height:100vh; width:var(--sb-open); min-width:var(--sb-open);
+      background:var(--panel); border-right:1px solid var(--border); box-shadow:var(--shadow);
+      padding:16px 12px; display:flex; flex-direction:column; gap:10px; transition: .25s;
+      z-index:2;
+    }
+    .sidebar.collapsed{ width:var(--sb-closed); min-width:var(--sb-closed); padding:16px 8px; }
+    .brand-row{display:flex;align-items:center;gap:8px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;margin:2px 0 4px}
+    .brand .tree{font-size:18px}
+    .brand .label{white-space:nowrap;transition:opacity .2s ease}
+    .sidebar.collapsed .brand .label{opacity:0;display:none}
+    .nav-toggle{
+      margin-left:auto;width:32px;height:32px;display:grid;place-items:center;
+      border-radius:10px;border:1px solid var(--border);background:var(--panel);
+      cursor:pointer; transition:background .2s ease, transform .2s ease; color:var(--toggle-ico);
+    }
+    .nav-toggle:hover{background:var(--accent-50)}
+    .nav-toggle .burger{font-size:18px;line-height:1}
+    .sidebar.collapsed .nav-toggle .burger{transform:rotate(180deg)}
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;
+      color:var(--text);background:#fff;border:1px solid var(--border);transition:.2s;
+    }
+    :root[data-theme="dark"] .nav a{ background:var(--panel); }
+    .nav a .ico{width:1.25em;text-align:center}
+    .nav a:hover{ background:var(--accent-50); border-color:var(--accent) }
+    .nav a.active{ background:var(--accent); color:#fff; border-color:var(--accent) }
+    .nav .label{white-space:nowrap;transition:opacity .18s ease, margin .18s ease}
+    .sidebar.collapsed .nav .label{opacity:0;display:none;margin:0}
+    .sidebar.collapsed .nav a{justify-content:center}
+    .sep{height:1px;background:var(--border);margin:6px 0 6px}
+
+    .main{flex:1;max-width:1100px;margin:0 auto;padding:24px; transition:.25s}
+    .sidebar.collapsed + .main{padding-left:24px}
+    .hero{
+      display:flex;gap:18px;align-items:center;padding:28px 24px;border-radius:var(--radius-lg);
+      background:linear-gradient(135deg,var(--accent-50),#ffffff10),var(--panel);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+    }
+    .logo{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:30px;
+      background:conic-gradient(from 180deg,#22c55e 0deg,#16a34a 140deg,#0ea5e9 320deg)}
+    .subtle{color:var(--muted);font-size:13px}
+    .status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:13px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#bbb;box-shadow:0 0 0 3px var(--ring)}
+    .ok .dot{background:var(--accent)} .err .dot{background:#ef4444}
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    .btn{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+    .btn:hover{background:var(--accent-700)}
+    .btn-danger{background:#ef4444}.btn-danger:hover{background:#dc2626}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--accent-50);border-color:var(--accent)}
+
+    .tk-theme-toggle{
+      position: fixed; right: 16px; bottom: 16px; z-index: 1000;
+      padding: 10px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--text); cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand"><span class="tree">🌳</span><span class="label">TamanKota</span></div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" title="Buka/Tutup menu" aria-expanded="true"><span class="burger">☰</span></button>
+    </div>
+    <nav class="nav">
+      <a href="start_index.html"  title="Kembali ke Start"><span class="ico">🏠</span><span class="label">Start</span></a>
+      <a href="input_index.html"  title="Buka Input"><span class="ico">📝</span><span class="label">Input</span></a>
+      <a href="output_index.html" title="Buka Output"><span class="ico">📊</span><span class="label">Output</span></a>
+      <a href="report_index.html" class="active" title="Cetak Laporan"><span class="ico">🖨️</span><span class="label">Laporan</span></a>
+      <div class="sep"></div>
+      <a href="http://127.0.0.1:8081/phpmyadmin" target="_blank" rel="noopener" title="phpMyAdmin"><span class="ico">🗄️</span><span class="label">phpMyAdmin</span></a>
+      <a href="#" id="logout" title="Keluar"><span class="ico">🚪</span><span class="label">Keluar</span></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="hero">
+      <div class="logo">🖨️</div>
+      <div>
+        <h1>Laporan Kegiatan Penataan Taman Kota</h1>
+        <p class="subtle">Satu klik untuk menggabungkan seluruh data menjadi dokumen siap cetak. Anda bisa pakai mode klien (langsung dari browser) atau mode server (HTML dicetak dari server).</p>
+      </div>
+      <div id="status" class="status"><span class="dot"></span><span>Cek backend…</span></div>
+    </header>
+
+    <section class="card" style="margin-top:18px">
+      <h3>🔧 Pengaturan</h3>
+      <p class="subtle">Pilih aksi di bawah. Konfirmasi akan diminta sebelum mulai.</p>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+        <button id="btnBuild" class="btn">🖨️ Cetak (Mode Klien)</button>
+        <button id="btnServerReport" class="btn btn-ghost">🖨️ Cetak (Mode Server)</button>
+        <button id="btnClearAll" class="btn btn-danger">🗑️ Hapus Semua Data</button>
+        <span id="msg" class="subtle"></span>
+      </div>
+    </section>
+  </main>
+
+  <button class="tk-theme-toggle" id="btnTheme" aria-label="Ubah ke mode gelap">🌙 Gelap</button>
+
+  <script>
+    (function(){
+      const KEY='tk_nav_collapsed';
+      const sb  = document.getElementById('sidebar');
+      const btn = document.getElementById('navToggle');
+      function apply(collapsed){
+        if(collapsed){ sb.classList.add('collapsed'); btn.setAttribute('aria-expanded','false'); }
+        else{ sb.classList.remove('collapsed'); btn.setAttribute('aria-expanded','true'); }
+        try{ localStorage.setItem(KEY, collapsed?'1':'0'); }catch(_){}
+      }
+      apply(localStorage.getItem(KEY)==='1');
+      btn.addEventListener('click',()=>apply(!sb.classList.contains('collapsed')));
+    })();
+
+    (function(){
+      const KEY='tk_theme', btn=document.getElementById('btnTheme');
+      function apply(t){
+        document.documentElement.setAttribute('data-theme',t);
+        try{ localStorage.setItem(KEY,t); }catch(_){}
+        btn.textContent=(t==='dark')?'🌞 Terang':'🌙 Gelap';
+        btn.setAttribute('aria-label',(t==='dark')?'Ubah ke mode terang':'Ubah ke mode gelap');
+      }
+      apply(localStorage.getItem(KEY)||'light');
+      btn.addEventListener('click',()=>apply((localStorage.getItem(KEY)||'light')==='dark'?'light':'dark'));
+    })();
+
+    const API='http://127.0.0.1:5000/api';
+    (async ()=>{
+      const box=document.getElementById('status');
+      try{const r=await fetch(API+'/health',{cache:'no-store'}); if(!r.ok) throw 0;
+        box.classList.add('ok'); box.lastElementChild.textContent='Backend tersambung';
+      }catch{ box.classList.add('err'); box.lastElementChild.textContent='Backend tidak dapat dijangkau'; }
+    })();
+
+    const msg = document.getElementById('msg');
+    const fetchJSON = async (path, options)=> {
+      const res = await fetch(API+path, {cache:'no-store', ...(options||{})});
+      if(!res.ok){
+        const txt = await res.text().catch(()=>res.statusText);
+        throw new Error(txt || ('HTTP '+res.status));
+      }
+      const ct = res.headers.get('content-type')||'';
+      return ct.includes('application/json') ? res.json() : [];
+    };
+
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+
+    // Build a table with:
+    // - fixed, minimal width for first "No." column across all tables
+    // - 5 blank spacer rows after the real data to create visual gaps
+    function buildTable(headers, rows){
+      const cols = `
+        <colgroup>
+          <col style="width:56px">                 <!-- consistent narrow 'No.' column -->
+          <col span="${headers.length-1}">
+        </colgroup>`;
+      const spacer = Array.from({length:5})
+        .map(()=>`<tr class="spacer"><td colspan="${headers.length}"></td></tr>`).join('');
+      return `
+        <table class="tk-table">
+          ${cols}
+          <thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}
+            ${spacer}
+          </tbody>
+        </table>`;
+    }
+
+    function buildReportHTML({taman, petugas, kegiatan, tanaman, laporan}){
+      const mapTamanById = new Map((taman||[]).map(t=>[parseInt(t.id_taman,10), t]));
+      const mapTamanNameById = new Map((taman||[]).map(t=>[parseInt(t.id_taman,10), t.nama_taman]));
+      const mapTamanNameByTanamanId = new Map((tanaman||[]).map(x=>[parseInt(x.id_tanaman,10), mapTamanNameById.get(parseInt(x.id_taman,10)) || '-' ]));
+      const mapTanamanByName = new Map((tanaman||[]).map(x=>[String(x.nama_umum||'').toLowerCase(), x]));
+
+      const sec1 = buildTable(['No.','Nama','Luas (m²)','Lokasi'], (taman||[]).map((t,i)=>[i+1, t.nama_taman||'', t.luas_taman??'-', t.lokasi??'-']));
+      const sec2 = buildTable(['No.','Nama Petugas','Jabatan'], (petugas||[]).map((p,i)=>[i+1, p.nama_petugas||'', p.jabatan??'-']));
+      const sec3 = buildTable(['No.','Jenis Kegiatan'], (kegiatan||[]).map((k,i)=>[i+1, k.jenis_kegiatan||'']));
+      const sec4 = buildTable(['No.','Nama Taman','Nama Tanaman','Nama Ilmiah','Jenis'],
+        (tanaman||[]).map((x,i)=>[ i+1, mapTamanNameById.get(parseInt(x.id_taman,10)) || '-', x.nama_umum||'', x.nama_ilmiah||'-', x.jenis||'-' ])
+      );
+      const rows5 = (laporan||[]).map((L,i)=>{
+        let namaTaman='-';
+        if (L.id_tanaman != null) { namaTaman = mapTamanNameByTanamanId.get(parseInt(L.id_tanaman,10)) || '-'; }
+        else if (L.tanaman) { const t = mapTanamanByName.get(String(L.tanaman).toLowerCase()); if (t) namaTaman = mapTamanNameById.get(parseInt(t.id_taman,10)) || '-'; }
+        return [ i+1, L.tanggal || '', namaTaman, L.tanaman || '', L.kegiatan || '', L.isi_laporan ?? '' ];
+      });
+      const sec5 = buildTable(['No.','Tanggal','Nama Taman','Nama Tanaman','Kegiatan','Isi Laporan'], rows5);
+
+      const tglStr = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+
+      return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Laporan Kegiatan Penataan Taman Kota</title>
+<style>
+  body{ font-family:Inter, Arial, sans-serif; color:#111827; margin:24px; }
+  h1{ margin:0 0 8px; font-size:22px }
+  h2{ margin:22px 0 8px; font-size:16px }
+  .muted{ color:#374151; font-size:12px; margin-bottom:16px }
+
+  /* tables look uniform, first column narrow, equal width behaviour */
+  table.tk-table{ width:100%; table-layout:fixed; border-collapse:collapse; margin:8px 0 0 }
+  th,td{ border:1px solid #d1d5db; padding:8px 10px; font-size:12px; vertical-align:top; }
+  thead th{ background:#f3f4f6; font-weight:700 }
+  .tk-table th:first-child, .tk-table td:first-child{ text-align:center; }
+
+  /* 5 blank “rows” between tables */
+  tr.spacer td{ border:0; height:14px; padding:0; }
+
+  .header{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px }
+  @media print{ @page{ size:A4; margin:15mm } body{ margin:0 } .noprint{ display:none !important } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Laporan Kegiatan Penataan Taman Kota</h1>
+    <div class="muted">Tanggal cetak: ${esc(tglStr)}</div>
+  </div>
+
+  <h2>I. Identitas Taman</h2>
+  ${sec1}
+
+  <h2>II. Susunan Petugas Taman</h2>
+  ${sec2}
+
+  <h2>III. Kegiatan yang Dilakukan</h2>
+  ${sec3}
+
+  <h2>IV. Data Tanaman di Taman</h2>
+  ${sec4}
+
+  <h2>V. Laporan Pendataan Penataan Taman Kota</h2>
+  ${sec5}
+
+  <div class="muted">Sumber: Sistem Informasi Perawatan Taman Kota</div>
+</body>
+</html>`;
+    }
+
+    async function gatherAll(){
+      try{
+        const bundle = await fetchJSON('/report/all?limit=100000');
+        if (bundle && bundle.taman && bundle.tanaman) return bundle;
+      }catch(_){}
+      try{
+        const [taman, petugas, kegiatan, tanaman, laporan] = await Promise.all([
+          fetchJSON('/taman'),
+          fetchJSON('/petugas'),
+          fetchJSON('/kegiatan'),
+          fetchJSON('/tanaman_all'),
+          fetchJSON('/laporan?limit=100000')
+        ]);
+        if (Array.isArray(tanaman)) return {taman, petugas, kegiatan, tanaman, laporan};
+      }catch(_){}
+      const taman = await fetchJSON('/taman');
+      const [petugas, kegiatan, laporan] = await Promise.all([
+        fetchJSON('/petugas'),
+        fetchJSON('/kegiatan'),
+        fetchJSON('/laporan?limit=100000')
+      ]);
+      const tanamanPerTaman = await Promise.all(
+        (taman || []).map(t => fetchJSON('/tanaman?id_taman=' + encodeURIComponent(t.id_taman)).catch(()=>[]))
+      );
+      const tanaman = ([]).concat(...tanamanPerTaman);
+      return {taman, petugas, kegiatan, tanaman, laporan};
+    }
+
+    async function buildAndPrint(){
+      msg.textContent = 'Mengumpulkan data…';
+      try{
+        const ok = confirm('Buat dan cetak laporan lengkap sekarang?');
+        if(!ok){ msg.textContent = 'Dibatalkan.'; return; }
+        const data = await gatherAll();
+        msg.textContent = 'Menyusun laporan…';
+        const html = buildReportHTML(data);
+        const win = window.open('', '_blank');
+        if(!win){ alert('Pop-up diblokir. Izinkan pop-up untuk situs ini.'); msg.textContent='Gagal membuka jendela cetak.'; return; }
+        win.document.open(); win.document.write(html); win.document.close();
+        const trigger = () => { try{ win.focus(); win.print(); }catch(_){} };
+        if (win.document.readyState === 'complete') trigger(); else win.onload = trigger;
+        msg.textContent = 'Laporan dibuka. Gunakan dialog Print (Pilih "Save as PDF" untuk simpan).';
+      }catch(err){
+        console.error(err);
+        msg.textContent = 'Gagal membuat laporan: ' + (err.message || err);
+        alert('Gagal membuat laporan:\n' + (err.message || err));
+      }
+    }
+
+    function openServerReport(){
+      const ok = confirm('Cetak laporan dari server sekarang?');
+      if(!ok) return;
+      window.open(API + '/report/html?limit=100000', '_blank');
+    }
+
+    async function clearAllData(){
+      const ok = confirm('PERINGATAN: Semua data (Taman, Tanaman, Petugas, Kegiatan, Laporan) akan DIHAPUS.\nLanjutkan?');
+      if(!ok) return;
+      msg.textContent = 'Menghapus semua data…';
+      try{
+        await fetchJSON('/admin/clear_all', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ confirm:true, reset_auto_increment:true })
+        });
+        msg.textContent = 'Berhasil menghapus semua data. Anda dapat mulai input data baru.';
+        alert('Berhasil menghapus seluruh data.');
+      }catch(err){
+        console.error(err);
+        msg.textContent = 'Gagal menghapus data: ' + (err.message || err);
+        alert('Gagal menghapus data:\n' + (err.message || err));
+      }
+    }
+
+    document.getElementById('btnBuild').addEventListener('click', buildAndPrint);
+    document.getElementById('btnServerReport').addEventListener('click', openServerReport);
+    document.getElementById('btnClearAll').addEventListener('click', clearAllData);
+
+    document.getElementById('logout')?.addEventListener('click',function(e){
+      e.preventDefault(); try{localStorage.removeItem('tk_auth');localStorage.removeItem('tk_auth_base');}catch(_){}
+      var dir=location.pathname.endsWith('/')?location.pathname:location.pathname.replace(/[^\/]+$/,''); location.href=dir+'index.html';
+    });
+  </script>
+</body>
+</html>

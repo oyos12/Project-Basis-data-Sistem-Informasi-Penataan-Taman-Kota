@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <title>Output Data — Sistem Informasi Perawatan Taman Kota</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+
+  <!-- Keep saved theme (default: light) -->
+  <script>(function(){var t=localStorage.getItem('tk_theme')||'light';document.documentElement.setAttribute('data-theme',t);} )();</script>
+
+  <!-- Guard: must be logged in (any user) -->
+  <script>
+    (function () {
+      function toSameFolder(file){
+        var dir = location.pathname.endsWith('/') ? location.pathname
+                 : location.pathname.replace(/[^\/]+$/, '');
+        location.replace(dir + file);
+      }
+      try{
+        var auth = JSON.parse(localStorage.getItem('tk_auth')||'null');
+        if (!auth || !auth.user) toSameFolder('index.html');
+      }catch(e){ toSameFolder('index.html'); }
+    })();
+  </script>
+
+  <style>
+    :root{
+      --bg:#f4faf5;--panel:#ffffff;--border:#e6efe8;--text:#0f1e14;--muted:#5c6f61;
+      --accent:#16a34a;--accent-700:#15803d;--accent-50:#eaf7ee;--ring:rgba(22,163,74,.35);
+      --shadow:0 8px 24px rgba(2,6,23,.06);--radius:14px;--radius-lg:20px;
+
+      /* Collapsible sidebar sizes */
+      --sb-open: 250px; --sb-closed: 68px;
+
+      /* Toggle icon contrast */
+      --toggle-ico:#0f1e14; /* black (light mode) */
+    }
+    :root[data-theme="dark"]{
+      --bg:#0e1511;--panel:#0f1b14;--border:#17251b;--text:#ecf4ee;--muted:#9bb3a5;
+      --accent:#22c55e;--accent-700:#16a34a;--accent-50:#0e2215;--ring:rgba(34,197,94,.30);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --toggle-ico:#ecf4ee; /* light (dark mode) */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:flex;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 90% -10%, #dff6e6 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, #e8f7ee 0%, transparent 55%),
+        var(--bg);
+    }
+
+    /* === Collapsible sticky sidebar (same look as Start/Input) === */
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      width:var(--sb-open); min-width:var(--sb-open);
+      background:var(--panel); border-right:1px solid var(--border); box-shadow:var(--shadow);
+      padding:16px 12px; display:flex; flex-direction:column; gap:10px;
+      transition: width .25s ease, min-width .25s ease, padding .25s ease;
+      z-index:2;
+    }
+    .sidebar.collapsed{ width:var(--sb-closed); min-width:var(--sb-closed); padding:16px 8px; }
+
+    .brand-row{display:flex;align-items:center;gap:8px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;margin:2px 0 4px}
+    .brand .tree{font-size:18px}
+    .brand .label{white-space:nowrap;transition:opacity .2s ease}
+    .sidebar.collapsed .brand .label{opacity:0;display:none}
+
+    /* One icon button to toggle sidebar */
+    .nav-toggle{
+      margin-left:auto;width:32px;height:32px;display:grid;place-items:center;
+      border-radius:10px;border:1px solid var(--border);background:var(--panel);
+      cursor:pointer; transition:background .2s ease, transform .2s ease; color:var(--toggle-ico);
+    }
+    .nav-toggle:hover{background:var(--accent-50)}
+    .nav-toggle .burger{font-size:18px;line-height:1}
+    .sidebar.collapsed .nav-toggle .burger{transform:rotate(180deg)}
+
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px; border-radius:10px; text-decoration:none;
+      color:var(--text); background:#fff; border:1px solid var(--border);
+      transition:background .15s, border-color .15s, color .15s, padding .2s;
+    }
+    :root[data-theme="dark"] .nav a{ background:var(--panel); }
+    .nav a .ico{width:1.25em; text-align:center}
+    .nav a:hover{ background:var(--accent-50); border-color:var(--accent) }
+    .nav a.active{ background:var(--accent); color:#fff; border-color:var(--accent) }
+    .nav .label{white-space:nowrap;transition:opacity .18s ease, margin .18s ease}
+    .sidebar.collapsed .nav .label{opacity:0;display:none;margin:0}
+    .sidebar.collapsed .nav a{justify-content:center}
+    .sep{height:1px;background:var(--border);margin:6px 0 6px}
+
+    /* Main + hero */
+    .main{flex:1;max-width:1100px;margin:0 auto;padding:24px; transition:padding .25s ease}
+    .sidebar.collapsed + .main{padding-left:24px}
+    .hero{
+      display:flex;gap:18px;align-items:center;padding:28px 24px;border-radius:var(--radius-lg);
+      background:linear-gradient(135deg,var(--accent-50),#ffffff10),var(--panel);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+    }
+    .logo{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:30px;
+      background:conic-gradient(from 180deg,#22c55e 0deg,#16a34a 140deg,#0ea5e9 320deg)}
+    .subtle{color:var(--muted);font-size:13px}
+    .status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:13px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#bbb;box-shadow:0 0 0 3px var(--ring)}
+    .ok .dot{background:var(--accent)} .err .dot{background:#ef4444}
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+    .hidden{display:none !important}
+
+    /* Tables (sticky headers & fixed layout) */
+    .table-wrap{max-height:65vh; overflow:auto; -webkit-overflow-scrolling:touch; border-radius:12px}
+    table{width:100%; table-layout:fixed; border-collapse:separate; border-spacing:0 8px}
+    thead th{
+      position:sticky; top:0; z-index:5;
+      background:#fff; color:#000 !important; border:1px solid var(--border);
+      padding:10px 12px; font-weight:700; letter-spacing:.3px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.06);
+      white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+    }
+    :root[data-theme="dark"] thead th{ background:var(--panel); color:var(--text) !important; }
+    tbody tr{background:#fff; border:1px solid var(--border); box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    :root[data-theme="dark"] tbody tr{ background:var(--panel); }
+    tbody td{padding:12px 10px; font-size:14px; color:#000; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    :root[data-theme="dark"] tbody td{ color:var(--text); }
+    tbody tr:hover{outline:2px solid var(--accent-50)}
+    select{padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#fff; color:#000; outline:none}
+    :root[data-theme="dark"] select{ background:var(--panel); color:var(--text); }
+    .controls{display:flex; gap:10px; align-items:center; margin-bottom:10px}
+    .btn{padding:8px 12px; border-radius:10px; background:var(--accent); color:#fff; border:none; cursor:pointer}
+    .btn:hover{background:var(--accent-700)}
+    .empty{padding:10px; color:#444}
+
+    /* theme toggle */
+    .tk-theme-toggle{
+      position: fixed; right: 16px; bottom: 16px; z-index: 1000;
+      padding: 10px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--text); cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand"><span class="tree">🌳</span><span class="label">TamanKota</span></div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" title="Buka/Tutup menu" aria-expanded="true"><span class="burger">☰</span></button>
+    </div>
+    <nav class="nav">
+      <!-- Section (hash) links: will be intercepted to switch the view -->
+      <a href="#taman"    data-view="viewTaman"   class="active" title="Tabel Taman"><span class="ico">🏞️</span><span class="label">Tabel Taman</span></a>
+      <a href="#tanaman"  data-view="viewTanaman" title="Tanaman per Taman"><span class="ico">🌱</span><span class="label">Tanaman per Taman</span></a>
+      <a href="#laporan"  data-view="viewLaporan" title="Laporan"><span class="ico">🗒️</span><span class="label">Laporan</span></a>
+      <a href="#petugas"  data-view="viewPetugas" title="Petugas"><span class="ico">🧑‍🌾</span><span class="label">Petugas</span></a>
+      <a href="#kegiatan" data-view="viewKegiatan" title="Kegiatan"><span class="ico">🛠️</span><span class="label">Kegiatan</span></a>
+      <div class="sep"></div>
+      <!-- Page links: navigate normally (NOT intercepted) -->
+      <a href="input_index.html"    title="Buka Input"><span class="ico">📝</span><span class="label">Buka Input</span></a>
+      <a href="report_index.html"   title="Cetak Laporan"><span class="ico">🖨️</span><span class="label">Cetak Laporan</span></a>
+      <a href="start_index.html"    title="Kembali ke Start"><span class="ico">⬅️</span><span class="label">Kembali ke Start</span></a>
+      <a href="#" id="logout"       title="Keluar"><span class="ico">🚪</span><span class="label">Keluar</span></a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <main class="main">
+    <header class="hero">
+      <div class="logo">📊</div>
+      <div>
+        <h1>Output Data — Sistem Informasi Perawatan Taman Kota</h1>
+        <p class="subtle">Gunakan menu kiri untuk memilih tabel. Hanya satu tabel yang ditampilkan setiap saat.</p>
+      </div>
+      <div id="status" class="status"><span class="dot"></span><span>Cek backend…</span></div>
+    </header>
+
+    <!-- TAMAN -->
+    <section id="viewTaman" class="card" style="margin-top:18px">
+      <h3>🏞️ Daftar Taman</h3>
+      <div class="table-wrap">
+        <table id="tblTaman">
+          <thead><tr><th>Nama</th><th>Luas</th><th>Lokasi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TANAMAN PER TAMAN -->
+    <section id="viewTanaman" class="card hidden" style="margin-top:18px">
+      <h3>🌱 Tanaman pada Taman</h3>
+      <div class="controls">
+        <label class="subtle">Pilih Taman</label>
+        <select id="selTaman"></select>
+        <button id="btnReloadTanaman" class="btn">Muat Ulang</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tblTanaman">
+          <thead><tr><th style="width:60px">#</th><th>Nama Umum</th><th>Nama Ilmiah</th><th>Jenis</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="tanamanEmpty" class="empty hidden">Belum ada tanaman untuk taman ini.</div>
+    </section>
+
+    <!-- LAPORAN -->
+    <section id="viewLaporan" class="card hidden" style="margin-top:18px">
+      <h3>🗒️ Laporan</h3>
+      <div class="controls">
+        <label class="subtle">Jumlah baris</label>
+        <select id="lapLimit">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+        </select>
+        <button id="btnRefresh" class="btn" style="margin-left:auto">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tblLaporan">
+          <thead><tr><th>Tanggal</th><th>Tanaman</th><th>Kegiatan</th><th>Petugas</th><th>Isi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PETUGAS -->
+    <section id="viewPetugas" class="card hidden" style="margin-top:18px">
+      <h3>🧑‍🌾 Petugas</h3>
+      <div class="table-wrap">
+        <table id="tblPetugas">
+          <thead><tr><th>Nama Petugas</th><th>Jabatan</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- KEGIATAN -->
+    <section id="viewKegiatan" class="card hidden" style="margin-top:18px">
+      <h3>🛠️ Kegiatan</h3>
+      <div class="table-wrap">
+        <table id="tblKegiatan">
+          <thead><tr><th>Jenis Kegiatan</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Theme toggle -->
+  <button class="tk-theme-toggle" id="btnTheme" aria-label="Ubah ke mode gelap">🌙 Gelap</button>
+
+  <script>
+    /* ===== Sidebar open/close with persistence (same key as Start/Input) ===== */
+    (function(){
+      const KEY='tk_nav_collapsed';
+      const sb  = document.getElementById('sidebar');
+      const btn = document.getElementById('navToggle');
+      function apply(collapsed){
+        if(collapsed){ sb.classList.add('collapsed'); btn.setAttribute('aria-expanded','false'); }
+        else{ sb.classList.remove('collapsed'); btn.setAttribute('aria-expanded','true'); }
+        try{ localStorage.setItem(KEY, collapsed?'1':'0'); }catch(_){}
+      }
+      apply(localStorage.getItem(KEY)==='1');
+      btn.addEventListener('click',()=>apply(!sb.classList.contains('collapsed')));
+    })();
+
+    // Theme toggle
+    (function(){
+      const KEY='tk_theme', btn=document.getElementById('btnTheme');
+      function apply(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem(KEY,t);}catch(_){}
+        btn.textContent=(t==='dark')?'🌞 Terang':'🌙 Gelap';
+        btn.setAttribute('aria-label',(t==='dark')?'Ubah ke mode terang':'Ubah ke mode gelap');}
+      apply(localStorage.getItem(KEY)||'light');
+      btn.addEventListener('click',()=>apply((localStorage.getItem(KEY)||'light')==='dark'?'light':'dark'));
+    })();
+
+    // Utilities
+    const API='http://127.0.0.1:5000/api';
+    const qs=(s)=>document.querySelector(s), qsa=(s)=>Array.from(document.querySelectorAll(s));
+    async function api(path,options={}){const res=await fetch(API+path,{cache:'no-store',...options}); if(!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
+      return (res.headers.get('content-type')||'').includes('application/json')?res.json():{};}
+
+    // Router (intercept ONLY hash links with data-view)
+    const VIEW_IDS=['viewTaman','viewTanaman','viewLaporan','viewPetugas','viewKegiatan'];
+    function hideAll(){VIEW_IDS.forEach(id=>qs('#'+id).classList.add('hidden'))}
+    function setActive(h){qsa('.nav a[data-view]').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+h))}
+    async function showByHash(){
+      const h=(location.hash||'#taman').slice(1);
+      const link=qs('.nav a[data-view][href="#'+h+'"]'); const view=link?link.dataset.view:'viewTaman';
+      hideAll(); qs('#'+view).classList.remove('hidden'); setActive(h);
+      if(view==='viewTaman')    loadTamanTable();
+      if(view==='viewPetugas')  loadPetugasTable();
+      if(view==='viewKegiatan') loadKegiatanTable();
+      if(view==='viewLaporan')  loadLaporan();
+      if(view==='viewTanaman')  await prepareTanamanView();
+    }
+    qsa('.nav a[data-view]').forEach(a=>{
+      a.addEventListener('click',e=>{
+        if(a.getAttribute('href').startsWith('#')){ e.preventDefault(); location.hash=a.getAttribute('href'); }
+      });
+    });
+
+    // Health indicator
+    (async ()=>{
+      const box=qs('#status');
+      try{await api('/health'); box.classList.add('ok'); box.lastElementChild.textContent='Backend tersambung';}
+      catch{box.classList.add('err'); box.lastElementChild.textContent='Backend tidak dapat dijangkau';}
+    })();
+
+    // Data loaders
+    async function loadTamanTable(){const data=await api('/taman'); const tb=qs('#tblTaman tbody'); tb.innerHTML='';
+      data.forEach(r=>{const tr=document.createElement('tr');
+        tr.innerHTML='<td>'+ (r.nama_taman||'') +'</td><td>'+ (r.luas_taman??'-') +'</td><td>'+ (r.lokasi??'-') +'</td>';
+        tb.appendChild(tr);});}
+
+    async function prepareTanamanView(){
+      const list=await api('/taman'); const sel=qs('#selTaman'); sel.innerHTML='';
+      list.forEach(t=>{const o=document.createElement('option');o.value=t.id_taman;o.textContent=t.nama_taman;sel.appendChild(o);});
+      if(list.length){sel.value=list[0].id_taman; await loadTanamanFor(list[0].id_taman);}
+      sel.onchange=e=>loadTanamanFor(parseInt(e.target.value,10));
+      qs('#btnReloadTanaman').onclick=()=>loadTanamanFor(parseInt(sel.value,10));
+    }
+    async function fetchTanamanByTaman(id_taman){
+      const id=parseInt(id_taman,10);
+      try{const a=await api('/tanaman?id_taman='+id); if(Array.isArray(a)) return a;}catch(e){}
+      try{const all=await api('/tanaman'); if(Array.isArray(all)) return all.filter(x=>parseInt(x.id_taman,10)===id);}catch(e){}
+      return [];
+    }
+    async function loadTanamanFor(id_taman){
+      const tb=qs('#tblTanaman tbody'); tb.innerHTML='';
+      const empty=qs('#tanamanEmpty'); const data=await fetchTanamanByTaman(id_taman);
+      if(!data.length){empty.classList.remove('hidden'); return;} empty.classList.add('hidden');
+      data.forEach((r,i)=>{const tr=document.createElement('tr');
+        tr.innerHTML='<td>'+(i+1)+'</td><td>'+(r.nama_umum||'')+'</td><td>'+ (r.nama_ilmiah||'-') +'</td><td>'+(r.jenis||'-')+'</td>';
+        tb.appendChild(tr);});
+    }
+
+    async function loadLaporan(){
+      const limit=parseInt(qs('#lapLimit')?.value||'20',10); const data=await api('/laporan?limit='+limit);
+      const tb=qs('#tblLaporan tbody'); tb.innerHTML='';
+      data.forEach(r=>{const tr=document.createElement('tr');
+        tr.innerHTML='<td>'+(r.tanggal||'')+'</td><td>'+(r.tanaman||'')+'</td><td>'+(r.kegiatan||'')+'</td><td>'+(r.petugas||'')+'</td><td>'+(r.isi_laporan??'')+'</td>';
+        tb.appendChild(tr);});
+    }
+    async function loadPetugasTable(){const data=await api('/petugas'); const tb=qs('#tblPetugas tbody'); tb.innerHTML='';
+      data.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML='<td>'+(r.nama_petugas||'')+'</td><td>'+(r.jabatan??'-')+'</td>'; tb.appendChild(tr);});}
+    async function loadKegiatanTable(){const data=await api('/kegiatan'); const tb=qs('#tblKegiatan tbody'); tb.innerHTML='';
+      data.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML='<td>'+(r.jenis_kegiatan||'')+'</td>'; tb.appendChild(tr);});}
+
+    // Hook UI
+    window.addEventListener('hashchange',showByHash);
+    qs('#lapLimit')?.addEventListener('change',loadLaporan);
+    qs('#btnRefresh')?.addEventListener('click',loadLaporan);
+    showByHash();
+
+    // Logout
+    qs('#logout')?.addEventListener('click',function(e){
+      e.preventDefault(); try{localStorage.removeItem('tk_auth');localStorage.removeItem('tk_auth_base');}catch(_){}
+      var dir=location.pathname.endsWith('/')?location.pathname:location.pathname.replace(/[^\/]+$/,''); location.href=dir+'index.html';
+    });
+  </script>
+</body>
+</html>
